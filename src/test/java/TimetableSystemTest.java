@@ -1,3 +1,4 @@
+import timetable.CSVHandler;
 import timetable.TimetableSystem;
 import timetable.Timetable;
 import timetable.ClassSchedule;
@@ -116,4 +117,19 @@ public class TimetableSystemTest {
         system.addTimetable(new Timetable(name));
         assumeTrue(system.getTimetables().size() == 1);
         assertNotNull(system.getTimetableByName(name));}
+
+    @Tag("Thomas")
+    @Tag("Critical")
+    @Test
+    @DisplayName("1.03 - Duplicate imported records are ignored")
+    void DuplicateRecordTest() {
+        TimetableSystem timetableSystem = new TimetableSystem();
+
+        CSVHandler.importFromCSV("src/test/resources/COMP1002 Fundamentals of Artificial Intelligence.csv", timetableSystem);
+        assertAll(() -> assertEquals(29, timetableSystem.getClasses().size()),
+                () -> {
+                    CSVHandler.importFromCSV("src/test/resources/COMP1002 Fundamentals of Artificial Intelligence.csv", timetableSystem);
+                    assertEquals(29, timetableSystem.getClasses().size());
+                });
+    }
 }
