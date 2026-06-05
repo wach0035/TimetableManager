@@ -19,6 +19,18 @@ public class TimetableSystemTest {
     @BeforeEach
     void setUp() {
         system = new TimetableSystem();
+        system.addClass(new ClassSchedule(
+                "COMP1702 Fundamentals of Software Engineering",
+                "Internal, Bedford Park, S2, 1",
+                "Workshop", "1", "25-May to 29-May", "Monday", "09:00 - 11:00", "Bedford Park, Room 101"));
+        system.addClass(new ClassSchedule(
+                "ENGR1762 Networks and Cybersecurity",
+                "Internal, Tonsley, S2, 1",
+                "Lecture", "1", "25-May to 29-May", "Tuesday", "13:00 - 15:00", "Tonsley, Room 202"));
+        system.addClass(new ClassSchedule(
+                "COMP1702 Fundamentals of Software Engineering",
+                "Internal, Bedford Park, S2, 1",
+                "Practical", "2", "25-May to 29-May", "Wednesday", "15:00 - 17:00", "Bedford Park, Lab 3"));
     }
 
     @AfterEach
@@ -99,6 +111,7 @@ public class TimetableSystemTest {
     @Tag("Bright")
     @DisplayName("3.07 - Class Getter Empty List Test")
     void NoClassesGetterTest() {
+        system = new TimetableSystem();
         assertDoesNotThrow(() -> {
             List<ClassSchedule> result = system.getClassesByTopic(null);
             assertTrue(result.isEmpty());});}
@@ -127,10 +140,10 @@ public class TimetableSystemTest {
     @DisplayName("1.03 - Duplicate imported records are ignored")
     void DuplicateRecordTest() {
         CSVHandler.importFromCSV("src/test/resources/COMP1002 Fundamentals of Artificial Intelligence.csv", system);
-        assertAll(() -> assertEquals(29, system.getClasses().size()),
+        assertAll(() -> assertEquals(32, system.getClasses().size()),
                 () -> {
                     CSVHandler.importFromCSV("src/test/resources/COMP1002 Fundamentals of Artificial Intelligence.csv", system);
-                    assertEquals(29, system.getClasses().size());
+                    assertEquals(32, system.getClasses().size());
                 });
     }
 
@@ -140,10 +153,10 @@ public class TimetableSystemTest {
     @DisplayName("1.02 - Similar imported records are updated")
     void UpdateRecordOnImportTest() {
         CSVHandler.importFromCSV("src/test/resources/COMP1002 Fundamentals of Artificial Intelligence.csv", system);
-        assertAll(() -> assertEquals(29, system.getClasses().size()),
+        assertAll(() -> assertEquals(32, system.getClasses().size()),
                 () -> {
                     CSVHandler.importFromCSV("src/test/resources/COMP1002 Class Update.csv", system);
-                    assertEquals(29, system.getClasses().size()); // Shows no new record was created
+                    assertEquals(32, system.getClasses().size()); // Shows no new record was created
                     List<ClassSchedule> updatedClass = system.getClasses().stream().filter(cs -> cs.getTime().equals("20:00 - 23:00")).toList();
                     assertEquals(1, updatedClass.size());
                     assertEquals("G42 lecture room", updatedClass.get(0).getLocation());
@@ -196,7 +209,7 @@ public class TimetableSystemTest {
     void DeleteClassRecordTest() {
         CSVHandler.importFromCSV("src/test/resources/COMP1002 Fundamentals of Artificial Intelligence.csv", system);
         system.getClasses().remove(0);
-        assertEquals(28, system.getClasses().size());
+        assertEquals(31, system.getClasses().size());
 
     }
 
@@ -208,5 +221,40 @@ public class TimetableSystemTest {
         CSVHandler.importFromCSV("src/test/resources/COMP1002 Fundamentals of Artificial Intelligence.csv", system);
         system.clearClasses();
         assertEquals(0, system.getClasses().size());
+    }
+    @Test
+    @Tag("Critical")
+    @Tag("Menath")
+    @DisplayName("1.06 - Search function can find records by topic")
+    void searchFunctionCanFindRecordsByTopic() {
+        List<ClassSchedule> results = system.getClassesByTopic("software");
+
+        assertAll(
+                () -> assertEquals(2, results.size()),
+                () -> assertTrue(results.stream().allMatch(c -> c.getTopic().contains("Software Engineering")))
+        );
+    }
+
+    @Test
+    @Tag("Critical")
+    @Tag("Menath")
+    @DisplayName("1.06 - Search function is not case sensitive")
+    void searchFunctionIsNotCaseSensitive() {
+        List<ClassSchedule> results = system.getClassesByTopic("NETWORKS");
+
+        assertAll(
+                () -> assertEquals(1, results.size()),
+                () -> assertEquals("ENGR1762 Networks and Cybersecurity", results.get(0).getTopic())
+        );
+    }
+
+    @Test
+    @Tag("Critical")
+    @Tag("Menath")
+    @DisplayName("1.06 - Search function can find records by campus")
+    void searchFunctionCanFindRecordsByCampus() {
+        List<ClassSchedule> results = system.getClassesByCampus("Bedford Park");
+
+        assertEquals(2, results.size());
     }
 }

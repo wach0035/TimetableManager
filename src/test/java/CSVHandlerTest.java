@@ -7,6 +7,9 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.CsvFileSource;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.*;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 @TestMethodOrder(MethodOrderer.DisplayName.class)
 
@@ -260,4 +263,46 @@ public class CSVHandlerTest {
                 test_data + "ENGR1762 Networks and Cybersecurity.csv", freshSystem);
         assumingThat(result != null,
                 () -> assertTrue(result[0] + result[1] > 0));}
+    @Test
+    @Tag("Critical")
+    @Tag("Menath")
+    @DisplayName("1.05 - Invalid data formatting is rejected when required headers are wrong")
+    void invalidDataFormattingWithBadHeadersIsRejected() throws IOException {
+        Path file = Files.createTempFile("menath_bad_header", ".csv");
+        Files.writeString(file, "Topic,Availability,Class,Date,Day,Time,Location\n" +
+                "COMP1702,S2,Workshop,25/05/2026,Monday,09:00,Bedford Park\n");
+
+        int[] result = CSVHandler.importFromCSV(file.toString(), tsystem);
+
+        assertAll(
+                () -> assertNull(result),
+                () -> assertTrue(tsystem.getClasses().isEmpty())
+        );
+    }
+
+    @Test
+    @Tag("Critical")
+    @Tag("Menath")
+    @DisplayName("1.05 - Invalid empty CSV is rejected")
+    void emptyCSVIsRejected() {
+        int[] result = CSVHandler.importFromCSV("src/test/resources/Empty.csv", tsystem);
+
+        assertAll(
+                () -> assertNull(result),
+                () -> assertEquals(0, tsystem.getClasses().size())
+        );
+    }
+
+    @Test
+    @Tag("Critical")
+    @Tag("Menath")
+    @DisplayName("1.05 - Non CSV text file is rejected")
+    void nonCSVTextFileIsRejected() {
+        int[] result = CSVHandler.importFromCSV("src/test/resources/Not a CSV file.txt", tsystem);
+
+        assertAll(
+                () -> assertNull(result),
+                () -> assertTrue(tsystem.getClasses().isEmpty())
+        );
+    }
 }

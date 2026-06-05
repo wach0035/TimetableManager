@@ -387,7 +387,71 @@ public class ConsoleFormatterTest {
         String output = captured();
         assertEquals(expected.toString(), output);
     }
+    private ClassSchedule sampleClass() {
+        return new ClassSchedule(
+                "COMP1702 Fundamentals of Software Engineering",
+                "Internal, Bedford Park, S2, 1",
+                "Workshop", "1", "25-May to 29-May", "Monday", "09:00 - 11:00", "Bedford Park, Room 101");
+    }
 
+    @Test
+    @Tag("Core")
+    @Tag("Menath")
+    @DisplayName("2.01 - Multiple class records can be displayed")
+    void multipleClassRecordsCanBeDisplayed() {
+        ClassSchedule first = sampleClass();
+        ClassSchedule second = new ClassSchedule(
+                "ENGR1762 Networks and Cybersecurity",
+                "Internal, Tonsley, S2, 1",
+                "Lecture", "1", "26-May", "Tuesday", "13:00 - 15:00", "Tonsley, Room 202");
+
+        ConsoleFormatter.printClassTable(List.of(first, second));
+        String text = outContent.toString();
+
+        assertAll(
+                () -> assertTrue(text.contains("COMP1702")),
+                () -> assertTrue(text.contains("ENGR1762")),
+                () -> assertTrue(text.contains("Workshop")),
+                () -> assertTrue(text.contains("Lecture"))
+        );
+    }
+
+    @Test
+    @Tag("Core")
+    @Tag("Menath")
+    @DisplayName("2.02 - Individual class records can be viewed")
+    void individualClassRecordCanBeViewed() {
+        ConsoleFormatter.printClassDetails(sampleClass());
+        String text = outContent.toString();
+
+        assertAll(
+                () -> assertTrue(text.contains("Topic")),
+                () -> assertTrue(text.contains("Availability")),
+                () -> assertTrue(text.contains("Class Instance")),
+                () -> assertTrue(text.contains("Bedford Park, Room 101"))
+        );
+    }
+
+    @Test
+    @Tag("Additional")
+    @Tag("Menath")
+    @DisplayName("3.02 - Display formatting is effective for headers and menu items")
+    void displayFormattingIsEffectiveForHeadersAndMenuItems() {
+        ConsoleFormatter.printHeader("MENATH TEST MENU");
+        ConsoleFormatter.printMenuItem(1, "Search Classes");
+        ConsoleFormatter.printReturnItem();
+        ConsoleFormatter.printSeparator();
+        String text = outContent.toString();
+
+        assertAll(
+                () -> assertTrue(text.contains("MENATH TEST MENU")),
+                () -> assertTrue(text.contains("[1]")),
+                () -> assertTrue(text.contains("Search Classes")),
+                () -> assertTrue(text.contains("[0]")),
+                () -> assertTrue(text.contains("=")),
+                () -> assertTrue(text.contains("-"))
+        );
+    }
 
 
 
