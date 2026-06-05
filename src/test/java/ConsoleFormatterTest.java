@@ -452,7 +452,4 @@ public class ConsoleFormatterTest {
                 () -> assertTrue(text.contains("-"))
         );
     }
-
-
-
 }
